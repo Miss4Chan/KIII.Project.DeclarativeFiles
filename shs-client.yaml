@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shs-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shs-client
+  template:
+    metadata:
+      labels:
+        app: shs-client
+    spec:
+      containers:
+      - name: shs-client
+        image: miss4chan/shs.client:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3000
+        envFrom:
+        - configMapRef:
+            name: shs-api-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shs-client
+spec:
+  selector:
+    app: shs-client
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP
+

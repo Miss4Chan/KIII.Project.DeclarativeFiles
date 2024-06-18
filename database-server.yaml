@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: database-server
+spec:
+  serviceName: "database-server"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database-server
+  template:
+    metadata:
+      labels:
+        app: database-server
+    spec:
+      containers:
+      - name: database-server
+        image: mcr.microsoft.com/mssql/server
+        ports:
+        - containerPort: 1433
+        env:
+        - name: ACCEPT_EULA
+          value: "Y"
+        - name: MSSQL_SA_PASSWORD
+          value: "MyC0mpl3xP@ssw0rd!"
+        volumeMounts:
+        - name: mssql-data
+          mountPath: /var/opt/mssql/data
+        - name: mssql-log
+          mountPath: /var/opt/mssql/log
+          
+  volumeClaimTemplates:
+  - metadata:
+      name: mssql-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+  - metadata:
+      name: mssql-log
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
+          
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-server
+spec:
+  selector:
+    app: database-server
+  type: ClusterIP
+  ports:
+    - protocol: TCP
+      port: 1433
+      targetPort: 1433

@@ -1,0 +1,45 @@
+gmaversion: "3"
+services:
+  shs-api:
+    environment:
+      - ASPNETCORE_HTTP_PORTS=80
+      - ASPNETCORE_HTTPS_PORTS=443
+      -ConnectionStrings__DefaultConnection=Server=database-server,1433;Database=SecondHandEShopDB;User Id=sa;Password=MyC0mpl3xP@ssw0rd!
+      - JWT_SECRET="Lep i suncan dan za objesiti se :)))))"
+      - JWT_ISSUER="Second Hand EShop"
+      - WEBSITES_ENABLE_APP_SERVICE_STORAGE=false
+    #preimenuvani so - poradi greshka so dns vo k8s??
+    container_name: shs-api
+    image: miss4chan/shs.api
+    
+    #ova mi trebashe koa praev build od windows zaradi .net
+    #build:
+    #  context: TeamProject.Backend
+    #  dockerfile: SecondHandEShop.api/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+
+  database-server:
+    image: "mcr.microsoft.com/mssql/server"
+    container_name: database-server
+    ports:
+      - "1433:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - MSSQL_SA_PASSWORD=MyC0mpl3xP@ssw0rd!
+    volumes:
+      - ./sqlserver/data:/var/opt/mssql/data
+      - ./sqlserver/log:/var/opt/mssql/log
+
+  shs-client:
+    #build:
+    #  context: TeamProject.Frontend
+    #  dockerfile: Dockerfile
+    image: miss4chan/shs.client
+    container_name: shs-client
+    ports:
+      - "3000:3000"
+    depends_on:
+      - shs.api
+

@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shs-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: shs-api
+  template:
+    metadata:
+      labels:
+        app: shs-api
+    spec:
+      initContainers:
+      - name: wait-for-database
+        image: busybox
+        command: ['sh', '-c', 'until nc -z database-server 1433; do echo waiting for database; sleep 2; done; echo database is up']
+      containers:
+      - name: shs-api
+        image: miss4chan/shs.api:main
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        - containerPort: 443
+        envFrom:
+        - configMapRef:
+            name: shs-api-config
+        - secretRef:
+            name: shs-api-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: shs-api
+spec:
+  selector:
+    app: shs-api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 80
+    - name: https
+      protocol: TCP
+      port: 443
+      targetPort: 443
+  type: ClusterIP
