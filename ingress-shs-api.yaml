@@ -2,6 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: shs-api-ingress
+  namespace: shs
   annotations:
     traefik.ingress.kubernetes.io/router.entrypoints: web, websecure
 spec:
